@@ -29,7 +29,7 @@ class ProductControllerTest extends ControllerTestSupport {
 
         // when, then
         mockMvc.perform(
-                        patch("/products/v1/update-all")
+                        patch("/products/v1/update")
                                 .content(content)
                                 .contentType(APPLICATION_JSON)
                 )
@@ -53,7 +53,7 @@ class ProductControllerTest extends ControllerTestSupport {
 
         // when, then
         mockMvc.perform(
-                        patch("/products/v1/update-all")
+                        patch("/products/v1/update")
                                 .content(content)
                                 .contentType(APPLICATION_JSON)
                 )

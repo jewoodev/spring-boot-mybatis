@@ -35,11 +35,12 @@ class ProductUseCaseTest extends IntegrationTestSupport {
                 ProductUpdateRequest.of(3L, "상품6", null, null)
                 )
         );
+        var updateCommands = updateBatch.toCommands();
 
         var sut = super.productUseCase;
 
         // when
-        sut.updateAll(updateBatch);
+        sut.updateAll(updateCommands);
 
         // then
         List<Product> savedProducts = productMapper.findAll(ProductSearchCond.of(null, null));

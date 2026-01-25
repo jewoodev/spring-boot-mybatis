@@ -23,9 +23,6 @@
             <if test="price != null">price = #{price},</if>
             <if test="quantity != null">quantity = #{quantity},</if>
         </set>
-        <where>
-
-        </where>
         where product_id = #{productId}
     </update>
 
@@ -40,7 +37,7 @@
         from product
         <where>
             <if test="productName != null and productName != ''">
-                and product_name like concat('%', #{productName}, '%')
+                product_name like concat('%', #{productName}, '%')
             </if>
             <if test="maxPrice != null">
                 and price &lt;= #{maxPrice}

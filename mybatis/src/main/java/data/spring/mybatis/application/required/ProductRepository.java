@@ -1,7 +1,7 @@
 package data.spring.mybatis.application.required;
 
 import data.spring.mybatis.adapter.in.dto.ProductSearchCond;
-import data.spring.mybatis.adapter.in.dto.ProductUpdateRequest;
+import data.spring.mybatis.application.service.command.ProductUpdateCommand;
 import data.spring.mybatis.domain.Product;
 
 import java.util.List;
@@ -12,7 +12,7 @@ public interface ProductRepository {
 
     int saveAll(List<Product> products);
 
-    void update(ProductUpdateRequest updateDto);
+    void update(ProductUpdateCommand updateCommand);
 
     Optional<Product> findById(Long productId);
 

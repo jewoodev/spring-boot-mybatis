@@ -19,8 +19,8 @@ public class ProductController {
         return "Hello World!";
     }
 
-    @PatchMapping("/update-all")
+    @PatchMapping("/update")
     public void updateProducts(@Valid @RequestBody ProductUpdateBatchRequest updateBatchRequest) {
-        this.productUseCase.updateAll(updateBatchRequest);
+        this.productUseCase.updateAll(updateBatchRequest.toCommands());
     }
 }
