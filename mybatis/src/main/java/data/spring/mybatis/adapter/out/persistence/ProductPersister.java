@@ -3,6 +3,7 @@ package data.spring.mybatis.adapter.out.persistence;
 import data.spring.mybatis.application.required.ProductRepository;
 import data.spring.mybatis.application.service.command.ProductSearchCommand;
 import data.spring.mybatis.application.service.command.ProductUpdateCommand;
+import data.spring.mybatis.domain.Product;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,13 +16,13 @@ public class ProductPersister implements ProductRepository {
     }
 
     @Override
-    public void save(ProductEntity entity) {
-        this.productMapper.save(entity);
+    public void save(Product entity) {
+        this.productMapper.save(ProductEntity.fromDomain(entity));
     }
 
     @Override
-    public int saveAll(List<ProductEntity> entities) {
-        return this.productMapper.saveAll(entities);
+    public int saveAll(List<Product> entities) {
+        return this.productMapper.saveAll(entities.stream().map(ProductEntity::fromDomain).toList());
     }
 
     @Override
@@ -30,13 +31,13 @@ public class ProductPersister implements ProductRepository {
     }
 
     @Override
-    public Optional<ProductEntity> findById(Long productId) {
-        return this.productMapper.findById(productId);
+    public Optional<Product> findById(Long productId) {
+        return this.productMapper.findById(productId).map(ProductEntity::toDomain);
     }
 
     @Override
-    public List<ProductEntity> findAll(ProductSearchCommand searchCond) {
-        return this.productMapper.findAll(searchCond);
+    public List<Product> findAll(ProductSearchCommand searchCond) {
+        return this.productMapper.findAll(searchCond).stream().map(ProductEntity::toDomain).toList();
     }
 
     @Override
