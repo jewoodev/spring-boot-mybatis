@@ -3,7 +3,6 @@ package data.spring.mybatis.adapter.out.persistence.product
 import data.spring.mybatis.application.service.product.command.ProductSearchCommand
 import data.spring.mybatis.application.service.product.command.ProductUpdateCommand
 import org.apache.ibatis.annotations.Mapper
-import java.util.*
 
 @Mapper
 interface ProductEntityMapper {
@@ -11,11 +10,11 @@ interface ProductEntityMapper {
 
     fun saveAll(entities: List<ProductEntity>): Int
 
-    fun update(updateCommand: ProductUpdateCommand)
+    fun update(updateCommand: ProductUpdateCommand): Int
 
     fun findById(productId: Long): ProductEntity?
 
-    fun findAll(searchCond: ProductSearchCommand): List<ProductEntity>
+    fun findWithCond(searchCommand: ProductSearchCommand): List<ProductEntity>
 
     fun deleteAll(): Int
 }

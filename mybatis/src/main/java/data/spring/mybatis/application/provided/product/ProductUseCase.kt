@@ -5,16 +5,12 @@ import data.spring.mybatis.application.service.product.command.ProductUpdateComm
 import data.spring.mybatis.domain.product.Product
 import java.util.*
 
-interface ProductUseCase {
+interface ProductUseCase : ProductUseCaseEx {
     fun findById(productId: Long): Product?
 
-    fun findAll(searchCommand: ProductSearchCommand): List<Product>
+    fun findWithCond(searchCommand: ProductSearchCommand): List<Product>
 
     fun save(product: Product)
 
     fun saveAll(products: List<Product>): Int
-
-    fun update(updateCommand: ProductUpdateCommand)
-
-    fun updateAll(updateCommands: List<ProductUpdateCommand>): Int
 }

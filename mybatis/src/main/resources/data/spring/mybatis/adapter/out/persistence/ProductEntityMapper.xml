@@ -4,15 +4,15 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="data.spring.mybatis.adapter.out.persistence.product.ProductEntityMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="productId">
-        insert into product (product_name, price, quantity)
-        values (#{productName}, #{price}, #{quantity})
+        insert into product (product_name, price, quantity, created_at, updated_at)
+        values (#{productName}, #{price}, #{quantity}, #{createdAt}, #{updatedAt})
     </insert>
 
     <insert id="saveAll" useGeneratedKeys="true" keyProperty="productId">
-        insert into product (product_name, price, quantity)
+        insert into product (product_name, price, quantity, created_at, updated_at)
         values
         <foreach collection="entities" item="entity" separator=",">
-            (#{entity.productName}, #{entity.price}, #{entity.quantity})
+            (#{entity.productName}, #{entity.price}, #{entity.quantity}, #{entity.createdAt}, #{entity.updatedAt})
         </foreach>
     </insert>
 
@@ -22,12 +22,12 @@
         where product_id = #{productId}
     </select>
 
-    <select id="findAll" resultType="ProductEntity">
+    <select id="findWithCond" resultType="ProductEntity">
         select product_id, product_name, price, quantity
         from product
         <where>
             <if test="productName != null and productName != ''">
-                product_name like concat('%', #{productName}, '%')
+                product_name like concat(#{productName}, '%')
             </if>
             <if test="maxPrice != null">
                 and price &lt;= #{maxPrice}
@@ -41,6 +41,7 @@
             <if test="productName != null">product_name = #{productName},</if>
             <if test="price != null">price = #{price},</if>
             <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
         </set>
         where product_id = #{productId}
     </update>

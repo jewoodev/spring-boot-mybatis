@@ -3,5 +3,7 @@ CREATE TABLE product(
     product_name VARCHAR(100),
     price INT,
     quantity SMALLINT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
     PRIMARY KEY (product_id)
 );

@@ -21,6 +21,6 @@ class ProductController(
 
     @PatchMapping("/update")
     fun updateProducts(@Valid @RequestBody updateBatchRequest: ProductUpdateBatchRequest) {
-        this.productUseCase.updateAll(updateBatchRequest.toCommands())
+        this.productUseCase.updateList(updateBatchRequest.toCommands())
     }
 }

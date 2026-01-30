@@ -31,7 +31,7 @@ class ProductUseCaseTest: IntegrationTestSupport() {
             Product(3L, "상품3", 40000, 30)
         )
 
-        val savedProducts = sut.findAll(ProductSearchCommand(null, null))
+        val savedProducts = sut.findWithCond(ProductSearchCommand(null, null))
 
         assertThat(savedProducts).isEqualTo(expected)
     }
@@ -58,7 +58,7 @@ class ProductUseCaseTest: IntegrationTestSupport() {
         val sut = super.productUseCase
         sut.saveAll(products)
 
-        val savedProducts = sut.findAll(ProductSearchCommand(productName = null, maxPrice = 30000))
+        val savedProducts = sut.findWithCond(ProductSearchCommand(productName = null, maxPrice = 30000))
         assertThat(savedProducts).hasSize(2)
         assertThat(savedProducts).extracting("productName").contains("리얼 마이바티스", "리얼 제이디비씨")
     }
@@ -81,11 +81,10 @@ class ProductUseCaseTest: IntegrationTestSupport() {
         val sut = super.productUseCase
 
         // when
-        val updateCnt = sut.updateAll(updateCommands)
+        sut.updateList(updateCommands)
 
         // then
-        val savedProducts = super.productRepository.findAll(ProductSearchCommand(productName = null, maxPrice = null))
-        assertThat(updateCnt).isEqualTo(3)
+        val savedProducts = super.productRepository.findWithCond(ProductSearchCommand(productName = null, maxPrice = null))
         assertThat(savedProducts).extracting("productName").containsExactly("상품4", "상품5", "상품6")
     }
 
@@ -101,7 +100,7 @@ class ProductUseCaseTest: IntegrationTestSupport() {
     fun findAllWhenNoProduct() {
         val sut = super.productUseCase
 
-        assertThatThrownBy { sut.findAll(ProductSearchCommand(productName = null, maxPrice = null)) }
+        assertThatThrownBy { sut.findWithCond(ProductSearchCommand(productName = null, maxPrice = null)) }
             .isInstanceOf(NoDataFoundException::class.java)
     }
 }
