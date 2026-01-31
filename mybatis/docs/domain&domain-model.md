@@ -24,7 +24,7 @@
 ---
 ## [회원 애그리거트]
 ## 회원(Member)
-_Entity_
+_Domain Model_
 ### 속성
 - `memberId`: 식별자
 - `username`: 아이디
@@ -32,10 +32,36 @@ _Entity_
 - `email`: 이메일 주소
 - `role'`: `Role` 회원 역할
 ### 행위
-- `static register`: 회원 등록: username, password, email, role, passwordEncoder 
+- `emailVerify`: 이메일 인증: (emailAddr, verificationCode, emailVerifier)
+- `register`: 회원 등록: (username, password, email, role, passwordEncoder)
+- `leave`: 회원 탈퇴: (memberId)
+- `changePassword`: 비밀번호 변경: (newPassword, passwordEncoder)
 ### 규칙
 - 회원의 비밀번호는 해시 암호화하여 저장한다.
-- 닉네임은 5 ~ 20 자 길이를 갖는다.
+- 아이디는 5 ~ 20 자 길이를 갖는다.
 - 비밀번호는 8 ~ 100 자 길이를 갖는다.
 
+## 비밀번호 부호기(PasswordEncoder)
+_Domain Model Service_
+### 행위
+- `encode`: 비밀번호 암호화: (password)
+- `matches`: 비밀번호 일치 여부 확인: (password, encodedPassword)
+
+## 이메일 인증기(EmailVerifier)
+_Domain Model Service_
+### 행위
+- `verify`: 인증: (emailAddr, verificationCode)
+
+## 이메일 인증 캐시(EmailVerificationCache)
+_Domain Model Service_
+### 행위
+- `getVerificationCode`: 인증 코드 가져오기: (emailAddr)
+- `setVerificationCode`: 인증 코드 캐싱하기: (emailAddr, verificationCode)
+
+## 중복 회원 검사기(MemberDuplicationVerifier)
+_Domain Model Service_
+### 행위
+- `verify`: 중복 회원 검사: (member)
+
 ---
+## [상품 애그리거트]
