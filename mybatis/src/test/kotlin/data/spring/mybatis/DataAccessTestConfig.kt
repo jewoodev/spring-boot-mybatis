@@ -1,8 +1,5 @@
 package data.spring.mybatis
 
-import data.spring.mybatis.adapter.out.persistence.product.ProductEntityMapper
-import data.spring.mybatis.adapter.out.persistence.product.ProductPersister
-import data.spring.mybatis.application.required.product.ProductRepository
 import org.apache.ibatis.logging.stdout.StdOutImpl
 import org.apache.ibatis.session.SqlSessionFactory
 import org.mybatis.spring.SqlSessionFactoryBean
@@ -13,11 +10,13 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType
+import org.springframework.transaction.annotation.EnableTransactionManagement
 import javax.sql.DataSource
 
-@Configuration
+@EnableTransactionManagement
 @MapperScan("data.spring.mybatis.adapter.out.persistence")
-class RepositoryTestConfig {
+@Configuration
+class DataAccessTestConfig {
     @Bean
     fun datasource(): DataSource {
         return EmbeddedDatabaseBuilder()
@@ -40,7 +39,7 @@ class RepositoryTestConfig {
 
         val conf = org.apache.ibatis.session.Configuration()
         conf.isMapUnderscoreToCamelCase = true
-        conf.setLogImpl(StdOutImpl::class.java)
+        conf.logImpl = StdOutImpl::class.java
 
         factoryBean.setConfiguration(conf)
 
@@ -50,10 +49,5 @@ class RepositoryTestConfig {
     @Bean
     fun transactionManager(dataSource: DataSource): DataSourceTransactionManager {
         return DataSourceTransactionManager(dataSource)
-    }
-
-    @Bean
-    fun productRepository(productEntityMapper: ProductEntityMapper): ProductRepository {
-        return ProductPersister(productEntityMapper)
     }
 }

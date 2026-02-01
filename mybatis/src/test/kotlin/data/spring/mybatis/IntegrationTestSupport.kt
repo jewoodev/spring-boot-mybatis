@@ -1,7 +1,8 @@
 package data.spring.mybatis
 
+import data.spring.mybatis.application.provided.member.MemberUseCase
 import data.spring.mybatis.application.provided.product.ProductUseCase
-import data.spring.mybatis.application.required.product.ProductRepository
+import data.spring.mybatis.domain.member.EmailVerifierCache
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
@@ -13,8 +14,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @ContextConfiguration(classes = [IntegrationTestConfig::class])
 abstract class IntegrationTestSupport {
     @Autowired
-    protected lateinit var productRepository: ProductRepository
+    protected lateinit var productUseCase: ProductUseCase
 
     @Autowired
-    protected lateinit var productUseCase: ProductUseCase
+    protected lateinit var memberUseCase: MemberUseCase
+
+    @Autowired
+    protected lateinit var evcCache: EmailVerifierCache
 }
