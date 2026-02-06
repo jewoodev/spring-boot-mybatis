@@ -6,15 +6,12 @@ import org.apache.ibatis.annotations.Mapper
 
 @Mapper
 interface ProductMapper {
-    fun save(product: Product)
-
-    fun saveAll(products: List<Product>): Int
+    fun save(product: Product): Int
 
     fun update(product: Product): Int
 
+    fun truncate(): Int
+
     fun findById(productId: Long): Product?
-
     fun findWithCond(searchCommand: ProductSearchCommand): List<Product>
-
-    fun deleteAll(): Int
 }

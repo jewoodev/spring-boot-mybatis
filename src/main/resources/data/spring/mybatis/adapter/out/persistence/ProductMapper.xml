@@ -46,7 +46,7 @@
         where product_id = #{productId}
     </update>
 
-    <delete id="deleteAll">
+    <delete id="truncate">
         truncate table product restart identity
     </delete>
 </mapper>

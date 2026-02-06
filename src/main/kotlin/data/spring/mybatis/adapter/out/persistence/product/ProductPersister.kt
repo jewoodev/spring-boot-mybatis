@@ -6,31 +6,24 @@ import data.spring.mybatis.domain.product.Product
 
 class ProductPersister(
     val productMapper: ProductMapper,
-): ProductRepository {
-    override fun save(product: Product) {
-        this.productMapper.save(product)
+) : ProductRepository {
+    override fun save(product: Product): Int {
+        return if (product.productId == null) {
+            productMapper.save(product)
+        } else {
+            productMapper.update(product)
+        }
     }
 
-    override fun saveAll(products: List<Product>): Int {
-        return this.productMapper.saveAll(products)
+    override fun truncate(): Int {
+        return productMapper.truncate()
     }
 
     override fun findById(productId: Long): Product? {
-        return this.productMapper.findById(productId)
+        return productMapper.findById(productId)
     }
 
     override fun findWithCond(searchCommand: ProductSearchCommand): List<Product> {
-        return this.productMapper.findWithCond(searchCommand)
-    }
-
-    override fun update(products: List<Product>): Int {
-        var cnt = 0
-        products.filter { it.isUpdated() }
-            .forEach { cnt += this.productMapper.update(it) }
-        return cnt
-    }
-
-    override fun deleteAll(): Int {
-        return this.productMapper.deleteAll()
+        return productMapper.findWithCond(searchCommand)
     }
 }
