@@ -1,8 +1,9 @@
 package data.spring.mybatis.adapter.out.persistence.product
 
 import data.spring.mybatis.application.required.product.ProductRepository
-import data.spring.mybatis.application.service.product.command.ProductSearchCommand
+import data.spring.mybatis.application.service.product.command.ProductSearchCond
 import data.spring.mybatis.domain.product.Product
+import java.time.LocalDateTime
 
 class ProductPersister(
     val productMapper: ProductMapper,
@@ -23,7 +24,16 @@ class ProductPersister(
         return productMapper.findById(productId)
     }
 
-    override fun findWithCond(searchCommand: ProductSearchCommand): List<Product> {
-        return productMapper.findWithCond(searchCommand)
+    override fun findByCond(
+        searchCond: ProductSearchCond?,
+        createdAt: LocalDateTime?,
+        productId: Long?,
+        size: Int
+    ): List<Product> {
+        return productMapper.findByCond(searchCond, createdAt, productId, size)
+    }
+
+    override fun findAll(): List<Product> {
+        return productMapper.findAll()
     }
 }
