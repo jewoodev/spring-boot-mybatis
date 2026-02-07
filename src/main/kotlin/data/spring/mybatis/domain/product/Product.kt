@@ -9,8 +9,8 @@ data class Product(
     val productName: ProductName,
     val price: Price,
     val quantity: Quantity,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime
+    val createdAt: LocalDateTime = LocalDateTime.now(clock()),
+    val updatedAt: LocalDateTime = LocalDateTime.now(clock())
 ) {
     fun increaseQuantity(amount: Int): Product {
         return copy(
@@ -44,14 +44,11 @@ data class Product(
             price: Price,
             quantity: Quantity
         ): Product {
-            val now = LocalDateTime.now(clock())
             return Product(
                 productId = null,
                 productName = productName,
                 price = price,
-                quantity = quantity,
-                createdAt = now,
-                updatedAt = now
+                quantity = quantity
             )
         }
     }
