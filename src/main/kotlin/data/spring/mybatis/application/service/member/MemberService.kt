@@ -34,18 +34,15 @@ class MemberService(
         val member = memberRepository.findById(codeSendCommand.memberId)
             ?: throw NoDataFoundException("Member not found with id: ${codeSendCommand.memberId}.")
 
-        emailSender.sendVerificationCode(member.email)
+        member.sendVerificationCode(emailSender)
     }
 
     override fun verify(verifyCommand: EmailVerifyCommand) {
         val member = memberRepository.findById(verifyCommand.memberId)
             ?: throw NoDataFoundException("이메일 인증 과정에서 있을 수 없는 회원 식별자 값이 감지되었습니다: ${verifyCommand.memberId}.")
 
-        if (emailVerifier.verify(member.email, verifyCommand.verificationCode)) {
-            member.activate().let { this.memberRepository.update(it) }
-        } else {
-            throw IllegalArgumentException("이메일 인증 코드가 올바르지 않습니다.")
-        }
+        member.verify(emailVerifier, verifyCommand.verificationCode)
+            .let { this.memberRepository.update(it) }
     }
 
     override fun findById(memberId: Long): Member? {

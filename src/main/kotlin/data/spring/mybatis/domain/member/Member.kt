@@ -15,6 +15,15 @@ data class Member constructor(
     val updatedAt: LocalDateTime = LocalDateTime.now(clock()),
     val leftAt: LocalDateTime? = null,
 ) {
+    fun sendVerificationCode(emailSender: EmailSender) {
+        emailSender.sendVerificationCode(email)
+    }
+
+    fun verify(verifier: EmailVerifier, verificationCode: String): Member {
+        require(verifier.verify(email, verificationCode)) { "이메일 인증 코드가 올바르지 않습니다." }
+        return this.activate()
+    }
+
     fun activate(): Member {
         check(role == UNVERIFIED) { "이미 활성화된 회원입니다." }
         return copy(role = Role.BUYER, updatedAt = LocalDateTime.now(clock()))
