@@ -1,15 +1,15 @@
 package data.spring.mybatis.application.provided.member
 
-import data.spring.mybatis.application.provided.member.request.EmailVerifyRequest
 import data.spring.mybatis.domain.member.Member
-import data.spring.mybatis.adapter.`in`.member.request.MemberCreateRequest
-import data.spring.mybatis.adapter.`in`.member.request.VfcCodeSendRequest
+import data.spring.mybatis.application.provided.member.dto.EmailVerifyCommand
+import data.spring.mybatis.application.provided.member.dto.MemberCreateCommand
+import data.spring.mybatis.application.provided.member.dto.VfcCodeSendCommand
 
 interface MemberUseCase {
-    fun register(createRequest: MemberCreateRequest)
+    fun register(createCommand: MemberCreateCommand)
 
-    fun sendVerificationCode(codeSendRequest: VfcCodeSendRequest)
-    fun verify(verifyRequest: EmailVerifyRequest)
+    fun sendVerificationCode(codeSendCommand: VfcCodeSendCommand)
+    fun verify(verifyCommand: EmailVerifyCommand)
 
     fun findById(memberId: Long): Member?
     fun findAll(): List<Member?>

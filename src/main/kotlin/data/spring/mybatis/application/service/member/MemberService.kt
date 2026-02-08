@@ -3,14 +3,17 @@ package data.spring.mybatis.application.service.member
 import data.spring.mybatis.application.exception.NoDataFoundException
 import data.spring.mybatis.application.provided.member.MemberDuplicationVerifier
 import data.spring.mybatis.application.provided.member.MemberUseCase
-import data.spring.mybatis.application.provided.member.request.EmailVerifyRequest
 import data.spring.mybatis.application.required.member.MemberRepository
 import data.spring.mybatis.domain.email.EmailSender
 import data.spring.mybatis.domain.member.EmailVerifier
 import data.spring.mybatis.domain.member.Member
 import data.spring.mybatis.domain.member.PasswordEncoder
-import data.spring.mybatis.adapter.`in`.member.request.MemberCreateRequest
-import data.spring.mybatis.adapter.`in`.member.request.VfcCodeSendRequest
+import data.spring.mybatis.application.provided.member.dto.EmailVerifyCommand
+import data.spring.mybatis.application.provided.member.dto.MemberCreateCommand
+import data.spring.mybatis.application.provided.member.dto.VfcCodeSendCommand
+import data.spring.mybatis.domain.member.Email
+import data.spring.mybatis.domain.member.Password
+import data.spring.mybatis.domain.member.Username
 
 class MemberService(
     val memberRepository: MemberRepository,
@@ -19,26 +22,26 @@ class MemberService(
     val emailVerifier: EmailVerifier,
     val emailSender: EmailSender
 ) : MemberUseCase {
-    override fun register(createRequest: MemberCreateRequest) {
-        memberDuplicationVerifier.verify(createRequest.username, createRequest.email)
+    override fun register(createCommand: MemberCreateCommand) {
+        memberDuplicationVerifier.verify(createCommand.username, createCommand.email)
 
-        Member.register(username = createRequest.username, password = createRequest.password,
-            email = createRequest.email, passwordEncoder = passwordEncoder)
+        Member.register(username = Username(createCommand.username), password = Password(createCommand.password),
+            email = Email(createCommand.email), passwordEncoder = passwordEncoder)
             .let { this.memberRepository.save(it) }
     }
 
-    override fun sendVerificationCode(codeSendRequest: VfcCodeSendRequest) {
-        val member = memberRepository.findById(codeSendRequest.memberId)
-            ?: throw NoDataFoundException("Member not found with id: ${codeSendRequest.memberId}.")
+    override fun sendVerificationCode(codeSendCommand: VfcCodeSendCommand) {
+        val member = memberRepository.findById(codeSendCommand.memberId)
+            ?: throw NoDataFoundException("Member not found with id: ${codeSendCommand.memberId}.")
 
         emailSender.sendVerificationCode(member.email)
     }
 
-    override fun verify(verifyRequest: EmailVerifyRequest) {
-        val member = memberRepository.findById(verifyRequest.memberId)
-            ?: throw NoDataFoundException("이메일 인증 과정에서 있을 수 없는 회원 식별자 값이 감지되었습니다: ${verifyRequest.memberId}.")
+    override fun verify(verifyCommand: EmailVerifyCommand) {
+        val member = memberRepository.findById(verifyCommand.memberId)
+            ?: throw NoDataFoundException("이메일 인증 과정에서 있을 수 없는 회원 식별자 값이 감지되었습니다: ${verifyCommand.memberId}.")
 
-        if (emailVerifier.verify(member.email, verifyRequest.verificationCode)) {
+        if (emailVerifier.verify(member.email, verifyCommand.verificationCode)) {
             member.activate().let { this.memberRepository.update(it) }
         } else {
             throw IllegalArgumentException("이메일 인증 코드가 올바르지 않습니다.")
