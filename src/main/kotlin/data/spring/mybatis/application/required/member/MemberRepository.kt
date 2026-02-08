@@ -3,11 +3,11 @@ package data.spring.mybatis.application.required.member
 import data.spring.mybatis.domain.member.Member
 
 interface MemberRepository {
-    fun save(member: Member)
+    fun save(member: Member): Int
     fun saveAll(members: List<Member>): Int
 
-    fun update(member: Member)
-    fun leave(member: Member)
+    fun update(member: Member): Int
+    fun leave(member: Member): Int
 
     fun deleteAll(): Int
 

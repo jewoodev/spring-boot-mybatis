@@ -1,8 +1,7 @@
 package data.spring.mybatis.adapter.`in`.member
 
 import data.spring.mybatis.ControllerTestSupport
-import data.spring.mybatis.domain.email.createVerificationCode
-import data.spring.mybatis.domain.email.createVerificationEmail
+import data.spring.mybatis.domain.email.VerificationEmailContent
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -30,7 +29,7 @@ class MemberControllerTest : ControllerTestSupport() {
 
     @Test
     fun sendVerificationCode() {
-        val expectedEmailContent = createVerificationEmail(createVerificationCode()) // will send this bia email
+        val expectedEmailContent = VerificationEmailContent() // This content will be sent via email
 
         mockMvc.perform(post("/members/v1/send-vfc")
             .contentType(APPLICATION_JSON)

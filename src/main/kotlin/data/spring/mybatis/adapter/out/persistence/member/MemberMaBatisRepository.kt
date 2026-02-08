@@ -6,20 +6,20 @@ import data.spring.mybatis.domain.member.Member
 class MemberMaBatisRepository(
     val memberMapper: MemberMapper
 ) : MemberRepository {
-    override fun save(member: Member) {
-         memberMapper.save(member)
+    override fun save(member: Member): Int {
+         return memberMapper.save(member)
     }
 
     override fun saveAll(members: List<Member>): Int {
         return memberMapper.saveAll(members)
     }
 
-    override fun update(member: Member) {
+    override fun update(member: Member): Int {
         return memberMapper.update(member)
     }
 
-    override fun leave(member: Member) {
-        memberMapper.leave(member)
+    override fun leave(member: Member): Int {
+        return memberMapper.leave(member)
     }
 
     override fun deleteAll(): Int {

@@ -22,8 +22,8 @@ class MemberService(
     val emailVerifier: EmailVerifier,
     val emailSender: EmailSender
 ) : MemberUseCase {
-    override fun register(createCommand: MemberCreateCommand) {
-        Member.register(
+    override fun register(createCommand: MemberCreateCommand): Int {
+        return Member.register(
             username = Username(createCommand.username),
             password = Password(createCommand.password),
             email = Email(createCommand.email),
@@ -34,34 +34,35 @@ class MemberService(
 
     override fun sendVerificationCode(codeSendCommand: VfcCodeSendCommand) {
         val member = memberRepository.findById(codeSendCommand.memberId)
-            ?: throw NoDataFoundException("Member not found with id: ${codeSendCommand.memberId}.")
+            ?: throw NoDataFoundException("메일 인증 코드 전송 중에 있을 수 없는 회원 식별자 값이 감지되었습니다: ${codeSendCommand.memberId}.")
 
         member.sendVerificationCode(emailSender)
     }
 
-    override fun verify(verifyCommand: EmailVerifyCommand) {
+    override fun verify(verifyCommand: EmailVerifyCommand): Int {
         val member = memberRepository.findById(verifyCommand.memberId)
             ?: throw NoDataFoundException("이메일 인증 과정에서 있을 수 없는 회원 식별자 값이 감지되었습니다: ${verifyCommand.memberId}.")
 
-        member.verify(emailVerifier, verifyCommand.verificationCode)
+        return member.verify(emailVerifier, verifyCommand.verificationCode)
             .let { this.memberRepository.update(it) }
     }
 
     override fun findById(memberId: Long): Member? {
         return this.memberRepository.findById(memberId)
-            ?: throw NoDataFoundException("Member not found with id: ${memberId}.")
+            ?: throw NoDataFoundException("회원 중 해당 식별자를 갖는 회원이 없습니다: ${memberId}.")
     }
 
     override fun findAll(): List<Member> {
         return this.memberRepository.findAll().ifEmpty { throw NoDataFoundException("No members found.") }
     }
 
-    override fun changePassword(member: Member, newPassword: String) {
-        member.changePassword(newPassword, passwordEncoder).let { this.memberRepository.update(it) }
+    override fun changePassword(member: Member, newPassword: String): Int {
+        return member.changePassword(newPassword, passwordEncoder)
+            .let { this.memberRepository.update(it) }
     }
 
-    override fun leave(member: Member) {
-        member.leave().let { this.memberRepository.leave(it) }
+    override fun leave(member: Member): Int {
+        return member.leave().let { this.memberRepository.leave(it) }
     }
 
     override fun deleteAll(): Int {

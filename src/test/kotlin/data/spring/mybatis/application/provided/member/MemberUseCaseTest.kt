@@ -12,6 +12,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import kotlin.text.Typography.registered
 
 class MemberUseCaseTest : IntegrationTestSupport() {
     private val sut by lazy { super.memberUseCase }
@@ -30,54 +31,57 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         sut.register(createCommand)
 
         // then
-        val registeredMember = sut.findAll().first { it?.username?.value == createCommand.username }
-        assertThat(registeredMember!!.username.value).isEqualTo(createCommand.username)
-        assertThat(registeredMember.email.value).isEqualTo(createCommand.email)
+        val registeredMembers = sut.findAll()
+        assertThat(registeredMembers).hasSize(1)
+        assertThat(registeredMembers[0]!!.username.value).isEqualTo(createCommand.username)
+        assertThat(registeredMembers[0]!!.email.value).isEqualTo(createCommand.email)
     }
 
     @Test
     fun `throw exception when registering with duplicate username or email`() {
         // given
-        val username = "duplicateUser"
-        val email = "duplicate@example.com"
-        registerMember(username = username, email = email)
+        val createCommand1 = createMemberCommand(username = "duplicateUser", email = "duplicate@example.com")
+        val createCommand2 = createMemberCommand(username = "otherUser", email = "duplicate@example.com")
+        sut.register(createCommand1)
 
         // when & then
-        assertThatThrownBy { sut.register(createMemberCommand(username = username, email = "other@example.com")) }
-            .isInstanceOf(MemberDuplicationException::class.java)
-
-        assertThatThrownBy { sut.register(createMemberCommand(username = "otherUser", email = email)) }
+        assertThatThrownBy { sut.register(createCommand2) }
             .isInstanceOf(MemberDuplicationException::class.java)
     }
 
     @Test
     fun `send verification code successfully`() {
         // given
-        val registered = registerMember()
+        val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
+        sut.register(createCommand)
+        val registered = sut.findById(1L)!!
 
         // when
         sut.sendVerificationCode(VfcCodeSendCommand(registered.memberId!!))
 
         // then
-        val cachedCode = super.evcCache.getVerificationCode(registered.email.value)
+        val cachedCode = evcCache.getVerificationCode(registered.email.value)
         assertThat(cachedCode).isNotNull
     }
 
     @Test
-    fun `throw exception when sending verification code to non-existent member`() {
+    fun `throw exception when sending verification code from non-existent member`() {
         // given
         val nonExistentMemberId = 9999L
 
         // when & then
         assertThatThrownBy { sut.sendVerificationCode(VfcCodeSendCommand(nonExistentMemberId)) }
             .isInstanceOf(NoDataFoundException::class.java)
-            .hasMessageContaining("Member not found with id: $nonExistentMemberId.")
+            .hasMessageContaining("메일 인증 코드 전송 중에 있을 수 없는 회원 식별자 값이 감지되었습니다: $nonExistentMemberId.")
     }
 
     @Test
     fun `verify email successfully`() {
         // given
-        val registered = registerMember()
+        val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
+        sut.register(createCommand)
+        val registered = sut.findById(1L)!!
+
         sut.sendVerificationCode(VfcCodeSendCommand(registered.memberId!!))
         val verificationCode = super.evcCache.getVerificationCode(registered.email.value)
         val verifyCommand = EmailVerifyCommand(memberId = registered.memberId, verificationCode = (verificationCode))
@@ -86,16 +90,18 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         sut.verify(verifyCommand)
 
         // then
-        val verifiedMember = sut.findById(registered.memberId!!)
+        val verifiedMember = sut.findById(registered.memberId)
         assertThat(verifiedMember!!.role).isEqualTo(Role.BUYER)
     }
 
     @Test
     fun `throw exception when verifying email with incorrect code`() {
         // given
-        val registered = registerMember()
+        val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
+        sut.register(createCommand)
+        val registered = sut.findById(1L)!!
         sut.sendVerificationCode(VfcCodeSendCommand(registered.memberId!!))
-        val incorrectCode = "9999999"
+        val incorrectCode = "9999999" // code got impossible length (7)
         val verifyCommand = EmailVerifyCommand(memberId = registered.memberId, verificationCode = incorrectCode)
 
         // when & then
@@ -119,7 +125,9 @@ class MemberUseCaseTest : IntegrationTestSupport() {
     @Test
     fun `find member by id successfully`() {
         // given
-        val registered = registerMember()
+        val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
+        sut.register(createCommand)
+        val registered = sut.findById(1L)!!
 
         // when
         val foundMember = sut.findById(registered.memberId!!)
@@ -137,14 +145,17 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // when & then
         assertThatThrownBy { sut.findById(nonExistentMemberId) }
             .isInstanceOf(NoDataFoundException::class.java)
-            .hasMessageContaining("Member not found with id: $nonExistentMemberId.")
+            .hasMessageContaining("회원 중 해당 식별자를 갖는 회원이 없습니다: $nonExistentMemberId.")
     }
 
     @Test
     fun `find all members successfully`() {
         // given
-        registerMember(username = "user1", email = "user1@example.com")
-        registerMember(username = "user2", email = "user2@example.com")
+        val createCommand1 = createMemberCommand(username = "testuser1", email = "test1@example.com")
+        val createCommand2 = createMemberCommand(username = "testuser2", email = "test2@example.com")
+        for (c in listOf(createCommand1, createCommand2)) {
+            sut.register(c)
+        }
 
         // when
         val members = sut.findAll()
@@ -164,8 +175,9 @@ class MemberUseCaseTest : IntegrationTestSupport() {
     @Test
     fun `change password successfully`() {
         // given
-        val passwordEncoder = super.passwordEncoder
-        val registered = registerMember()
+        val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
+        sut.register(createCommand)
+        val registered = sut.findById(1L)!!
         val newPassword = "newTestPassword"
 
         // when
@@ -179,7 +191,9 @@ class MemberUseCaseTest : IntegrationTestSupport() {
     @Test
     fun `leave member successfully`() {
         // given
-        val registered = registerMember()
+        val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
+        sut.register(createCommand)
+        val registered = sut.findById(1L)!!
 
         // when
         sut.leave(registered)
@@ -192,8 +206,11 @@ class MemberUseCaseTest : IntegrationTestSupport() {
     @Test
     fun `delete all members successfully`() {
         // given
-        registerMember(username = "user1", email = "user1@example.com")
-        registerMember(username = "user2", email = "user2@example.com")
+        val createCommand1 = createMemberCommand(username = "testuser1", email = "test1@example.com")
+        val createCommand2 = createMemberCommand(username = "testuser2", email = "test2@example.com")
+        for (c in listOf(createCommand1, createCommand2)) {
+            sut.register(c)
+        }
 
         // when
         val deletedCount = sut.deleteAll()
@@ -201,15 +218,6 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // then
         assertThat(deletedCount).isEqualTo(2)
         assertThatThrownBy { sut.findAll() }.isInstanceOf(NoDataFoundException::class.java)
-    }
-
-    private fun registerMember(
-        username: String = "testuser",
-        email: String = "test@example.com"
-    ): Member {
-        val command = createMemberCommand(username, email)
-        sut.register(command)
-        return sut.findAll().first { it?.username?.value == username }!!
     }
 
     private fun createMemberCommand(

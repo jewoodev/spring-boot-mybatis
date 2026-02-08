@@ -6,17 +6,17 @@ import data.spring.mybatis.application.provided.member.dto.MemberCreateCommand
 import data.spring.mybatis.application.provided.member.dto.VfcCodeSendCommand
 
 interface MemberUseCase {
-    fun register(createCommand: MemberCreateCommand)
+    fun register(createCommand: MemberCreateCommand): Int
 
     fun sendVerificationCode(codeSendCommand: VfcCodeSendCommand)
-    fun verify(verifyCommand: EmailVerifyCommand)
+    fun verify(verifyCommand: EmailVerifyCommand): Int
 
     fun findById(memberId: Long): Member?
     fun findAll(): List<Member?>
 
-    fun changePassword(member: Member, newPassword: String)
+    fun changePassword(member: Member, newPassword: String): Int
 
-    fun leave(member: Member)
+    fun leave(member: Member):Int
 
     fun deleteAll(): Int
 }

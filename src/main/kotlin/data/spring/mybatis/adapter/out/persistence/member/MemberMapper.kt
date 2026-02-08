@@ -5,11 +5,11 @@ import org.apache.ibatis.annotations.Mapper
 
 @Mapper
 interface MemberMapper {
-    fun save(member: Member)
+    fun save(member: Member): Int
     fun saveAll(members: List<Member>): Int
 
-    fun update(member: Member)
-    fun leave(member: Member)
+    fun update(member: Member): Int
+    fun leave(member: Member): Int
 
     fun truncate(): Int
 
