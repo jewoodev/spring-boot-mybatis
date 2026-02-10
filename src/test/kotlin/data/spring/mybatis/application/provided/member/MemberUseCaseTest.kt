@@ -1,18 +1,17 @@
 package data.spring.mybatis.application.provided.member
 
 import data.spring.mybatis.IntegrationTestSupport
-import data.spring.mybatis.domain.member.MemberDuplicationException
+import data.spring.mybatis.application.exception.HackingDoubtException
 import data.spring.mybatis.application.exception.NoDataFoundException
 import data.spring.mybatis.application.provided.member.dto.EmailVerifyCommand
 import data.spring.mybatis.application.provided.member.dto.MemberCreateCommand
 import data.spring.mybatis.application.provided.member.dto.VfcCodeSendCommand
-import data.spring.mybatis.domain.member.Member
+import data.spring.mybatis.domain.member.MemberDuplicationException
 import data.spring.mybatis.domain.member.Role
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
-import kotlin.text.Typography.registered
 
 class MemberUseCaseTest : IntegrationTestSupport() {
     private val sut by lazy { super.memberUseCase }
@@ -33,8 +32,8 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // then
         val registeredMembers = sut.findAll()
         assertThat(registeredMembers).hasSize(1)
-        assertThat(registeredMembers[0]!!.username.value).isEqualTo(createCommand.username)
-        assertThat(registeredMembers[0]!!.email.value).isEqualTo(createCommand.email)
+        assertThat(registeredMembers[0].username.value).isEqualTo(createCommand.username)
+        assertThat(registeredMembers[0].email.value).isEqualTo(createCommand.email)
     }
 
     @Test
@@ -54,7 +53,7 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // given
         val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
         sut.register(createCommand)
-        val registered = sut.findById(1L)!!
+        val registered = sut.findById(1L)
 
         // when
         sut.sendVerificationCode(VfcCodeSendCommand(registered.memberId!!))
@@ -71,7 +70,7 @@ class MemberUseCaseTest : IntegrationTestSupport() {
 
         // when & then
         assertThatThrownBy { sut.sendVerificationCode(VfcCodeSendCommand(nonExistentMemberId)) }
-            .isInstanceOf(NoDataFoundException::class.java)
+            .isInstanceOf(HackingDoubtException::class.java)
             .hasMessageContaining("메일 인증 코드 전송 중에 있을 수 없는 회원 식별자 값이 감지되었습니다: $nonExistentMemberId.")
     }
 
@@ -80,7 +79,7 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // given
         val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
         sut.register(createCommand)
-        val registered = sut.findById(1L)!!
+        val registered = sut.findById(1L)
 
         sut.sendVerificationCode(VfcCodeSendCommand(registered.memberId!!))
         val verificationCode = super.evcCache.getVerificationCode(registered.email.value)
@@ -91,7 +90,7 @@ class MemberUseCaseTest : IntegrationTestSupport() {
 
         // then
         val verifiedMember = sut.findById(registered.memberId)
-        assertThat(verifiedMember!!.role).isEqualTo(Role.BUYER)
+        assertThat(verifiedMember.role).isEqualTo(Role.BUYER)
     }
 
     @Test
@@ -99,7 +98,7 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // given
         val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
         sut.register(createCommand)
-        val registered = sut.findById(1L)!!
+        val registered = sut.findById(1L)
         sut.sendVerificationCode(VfcCodeSendCommand(registered.memberId!!))
         val incorrectCode = "9999999" // code got impossible length (7)
         val verifyCommand = EmailVerifyCommand(memberId = registered.memberId, verificationCode = incorrectCode)
@@ -118,7 +117,7 @@ class MemberUseCaseTest : IntegrationTestSupport() {
 
         // when & then
         assertThatThrownBy { sut.verify(verifyCommand) }
-            .isInstanceOf(NoDataFoundException::class.java)
+            .isInstanceOf(HackingDoubtException::class.java)
             .hasMessageContaining("이메일 인증 과정에서 있을 수 없는 회원 식별자 값이 감지되었습니다")
     }
 
@@ -127,14 +126,14 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // given
         val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
         sut.register(createCommand)
-        val registered = sut.findById(1L)!!
+        val registered = sut.findById(1L)
 
         // when
         val foundMember = sut.findById(registered.memberId!!)
 
         // then
         assertThat(foundMember).isNotNull
-        assertThat(foundMember!!.memberId).isEqualTo(registered.memberId)
+        assertThat(foundMember.memberId).isEqualTo(registered.memberId)
     }
 
     @Test
@@ -177,14 +176,14 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // given
         val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
         sut.register(createCommand)
-        val registered = sut.findById(1L)!!
+        val registered = sut.findById(1L)
         val newPassword = "newTestPassword"
 
         // when
-        sut.changePassword(registered, newPassword)
+        sut.changePassword(registered.memberId!!, newPassword)
 
         // then
-        val changedMember = sut.findById(registered.memberId!!)!!
+        val changedMember = sut.findById(registered.memberId)
         assertThat(passwordEncoder.matches(newPassword, changedMember.password.value)).isTrue()
     }
 
@@ -193,13 +192,13 @@ class MemberUseCaseTest : IntegrationTestSupport() {
         // given
         val createCommand = createMemberCommand(username = "testuser", email = "test@example.com")
         sut.register(createCommand)
-        val registered = sut.findById(1L)!!
+        val registered = sut.findById(1L)
 
         // when
-        sut.leave(registered)
+        sut.leave(registered.memberId!!)
 
         // then
-        val leftMember = sut.findById(registered.memberId!!)!!
+        val leftMember = sut.findById(registered.memberId)
         assertThat(leftMember.leftAt).isNotNull()
     }
 

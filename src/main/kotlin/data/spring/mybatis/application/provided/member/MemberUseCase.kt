@@ -11,12 +11,12 @@ interface MemberUseCase {
     fun sendVerificationCode(codeSendCommand: VfcCodeSendCommand)
     fun verify(verifyCommand: EmailVerifyCommand): Int
 
-    fun findById(memberId: Long): Member?
-    fun findAll(): List<Member?>
+    fun findById(memberId: Long): Member
+    fun findAll(): List<Member>
 
-    fun changePassword(member: Member, newPassword: String): Int
+    fun changePassword(memberId: Long, newPassword: String): Int
 
-    fun leave(member: Member):Int
+    fun leave(memberId: Long):Int
 
     fun deleteAll(): Int
 }
