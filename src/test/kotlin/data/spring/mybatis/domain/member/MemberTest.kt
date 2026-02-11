@@ -6,14 +6,14 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
 class MemberTest {
-    private val password = Password("testPassword")
+    private val password = "testPassword"
     private val passwordEncoder = SimplePasswordEncoder()
     private val duplicationVerifier = MemberDuplicationVerifier { username, email -> false }
 
     @Test
     fun `register member successfully`() {
-        val sut = Member.register(username = Username("testUser"),
-            email = Email("test@example.com"),
+        val sut = Member.register(username = "testUser",
+            email = "test@example.com",
             password = password,
             passwordEncoder = passwordEncoder,
             duplicationVerifier = duplicationVerifier
@@ -21,14 +21,14 @@ class MemberTest {
 
         assertThat(sut.role).isEqualTo(Role.UNVERIFIED)
         assertThat(
-            passwordEncoder.matches(rawPassword = password.value, encodedPassword = sut.password.value)
+            passwordEncoder.matches(rawPassword = password, encodedPassword = sut.password.value)
         ).isTrue()
     }
 
     @Test
     fun `activate member successfully`() {
-        val sut = Member.register(username = Username("testUser"),
-            email = Email("test@example.com"),
+        val sut = Member.register(username = "testUser",
+            email = "test@example.com",
             password = password,
             passwordEncoder = passwordEncoder,
             duplicationVerifier = duplicationVerifier
@@ -41,8 +41,8 @@ class MemberTest {
 
     @Test
     fun `throw exception when member is already activated`() {
-        val sut = Member.register(username = Username("testUser"),
-            email = Email("test@example.com"),
+        val sut = Member.register(username = "testUser",
+            email = "test@example.com",
             password = password,
             passwordEncoder = passwordEncoder,
             duplicationVerifier = duplicationVerifier
@@ -57,8 +57,8 @@ class MemberTest {
 
     @Test
     fun `change member's password successfully`() {
-        val sut = Member.register(username = Username("testUser"),
-            email = Email("test@example.com"),
+        val sut = Member.register(username = "testUser",
+            email = "test@example.com",
             password = password,
             passwordEncoder = passwordEncoder,
             duplicationVerifier = duplicationVerifier
@@ -74,8 +74,8 @@ class MemberTest {
 
     @Test
     fun `leave member successfully`() {
-        val sut = Member.register(username = Username("testUser"),
-            email = Email("test@example.com"),
+        val sut = Member.register(username = "testUser",
+            email = "test@example.com",
             password = password,
             passwordEncoder = passwordEncoder,
             duplicationVerifier = duplicationVerifier

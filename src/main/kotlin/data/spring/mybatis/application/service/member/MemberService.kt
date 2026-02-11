@@ -25,9 +25,9 @@ class MemberService(
 ) : MemberUseCase {
     override fun register(createCommand: MemberCreateCommand): Int {
         return Member.register(
-            username = Username(createCommand.username),
-            password = Password(createCommand.password),
-            email = Email(createCommand.email),
+            username = createCommand.username,
+            password = createCommand.password,
+            email = createCommand.email,
             passwordEncoder = passwordEncoder,
             duplicationVerifier = memberDuplicationVerifier
         ).let { memberRepository.save(it) }
