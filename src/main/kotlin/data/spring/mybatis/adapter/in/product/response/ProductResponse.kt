@@ -15,7 +15,7 @@ data class ProductResponse(
             return ProductResponse(
                 productName = product.productName.value,
                 price = product.price.amount,
-                quantity = product.quantity.value,
+                quantity = product.quantity.amount,
                 createdAt = product.createdAt,
                 updatedAt = product.updatedAt
             )

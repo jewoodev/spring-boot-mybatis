@@ -1,13 +1,19 @@
 package data.spring.mybatis.adapter.`in`.product
 
 import data.spring.mybatis.adapter.`in`.product.request.CursorInfo
+import data.spring.mybatis.adapter.`in`.product.request.ProductCreateRequest
+import data.spring.mybatis.adapter.`in`.product.request.ProductDeleteBatchRequest
+import data.spring.mybatis.adapter.`in`.product.request.ProductDeleteRequest
 import data.spring.mybatis.adapter.`in`.product.request.ProductUpdateBatchRequest
-import data.spring.mybatis.adapter.`in`.response.CursorPageResponse
 import data.spring.mybatis.adapter.`in`.product.response.ProductResponse
+import data.spring.mybatis.adapter.`in`.response.CursorPageResponse
 import data.spring.mybatis.application.provided.product.ProductUseCase
-import data.spring.mybatis.application.service.product.command.ProductSearchCond
+import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
+import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.net.URI
 
 @RequestMapping("/products/v1")
 @RestController
@@ -48,8 +54,20 @@ class ProductController(
         )
     }
 
+    @PostMapping("/save")
+    fun createProduct(@Valid @RequestBody createRequest: ProductCreateRequest): ResponseEntity<String> {
+        productUseCase.save(createRequest.toCommand())
+        return ResponseEntity.created(URI.create("products/v1/list")).body("상품 저장에 성공했습니다.")
+    }
+
     @PatchMapping("/update")
     fun updateProducts(@Valid @RequestBody updateBatchRequest: ProductUpdateBatchRequest) {
         updateBatchRequest.toCommands().forEach { this.productUseCase.update(it) }
+    }
+
+    @PatchMapping("/delete")
+    fun deleteProducts(@Valid @RequestBody deleteRequests: ProductDeleteBatchRequest): ResponseEntity<String> {
+        productUseCase.deleteAll(deleteRequests.toCommands())
+        return ResponseEntity.ok().body("상품 삭제에 성공했습니다.")
     }
 }

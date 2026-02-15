@@ -6,28 +6,28 @@ import org.junit.jupiter.api.Test
 
 class QuantityTest {
     @Test
-    fun createSuccessfully() {
+    fun `quantity is created successfully`() {
         val value = 10
         val quantity = Quantity(value)
-        assertThat(quantity.value).isEqualTo(value)
+        assertThat(quantity.amount).isEqualTo(value)
     }
 
     @Test
-    fun mustBePositive() {
+    fun `quantity must be non-negative`() {
         assertThatThrownBy { Quantity(-1) }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("재고 수량은 0 이상이어야 합니다.")
     }
 
     @Test
-    fun increaseSuccessfully() {
+    fun `quantity is increased successfully`() {
         val quantity = Quantity(10)
         val increased = quantity.increase(5)
-        assertThat(increased.value).isEqualTo(15)
+        assertThat(increased.amount).isEqualTo(15)
     }
 
     @Test
-    fun increaseInFailureWithInvalidAmount() {
+    fun `quantity increase fails with invalid amount`() {
         val quantity = Quantity(10)
         assertThatThrownBy { quantity.increase(0) }
             .isInstanceOf(IllegalArgumentException::class.java)
@@ -39,14 +39,14 @@ class QuantityTest {
     }
 
     @Test
-    fun decreaseSuccessfully() {
+    fun `quantity is decreased successfully`() {
         val quantity = Quantity(10)
         val decreased = quantity.decrease(5)
-        assertThat(decreased.value).isEqualTo(5)
+        assertThat(decreased.amount).isEqualTo(5)
     }
 
     @Test
-    fun decreaseInFailureWithInvalidAmount() {
+    fun `quantity decrease fails with invalid amount`() {
         val quantity = Quantity(10)
         assertThatThrownBy { quantity.decrease(0) }
             .isInstanceOf(IllegalArgumentException::class.java)
@@ -58,10 +58,10 @@ class QuantityTest {
     }
 
     @Test
-    fun decreaseInFailureWithInsufficientQuantity() {
+    fun `quantity decrease fails when quantity is insufficient`() {
         val quantity = Quantity(10)
         assertThatThrownBy { quantity.decrease(11) }
             .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("재고 수량이 부족합니다.")
+            .hasMessage("재고 수량이 부족해 11개 만큼 감소시킬 수 없습니다.")
     }
 }

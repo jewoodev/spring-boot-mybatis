@@ -1,36 +1,47 @@
 package data.spring.mybatis.application.service.product
 
+import data.spring.mybatis.application.exception.HackingDoubtException
 import data.spring.mybatis.application.exception.NoDataFoundException
 import data.spring.mybatis.application.provided.product.ProductUseCase
+import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
+import data.spring.mybatis.application.provided.product.dto.ProductDeleteCommand
+import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
+import data.spring.mybatis.application.provided.product.dto.ProductUpdateCommand
 import data.spring.mybatis.application.required.product.ProductRepository
-import data.spring.mybatis.application.service.product.command.ProductSearchCond
 import data.spring.mybatis.domain.product.Product
-import data.spring.mybatis.application.service.product.command.ProductUpdateCommand
-import data.spring.mybatis.domain.product.Price
-import data.spring.mybatis.domain.product.ProductName
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 open class ProductService(
     val productRepository: ProductRepository
 ) : ProductUseCase {
-    override fun save(product: Product): Int {
-        return productRepository.save(product)
+    override fun save(createCommand: ProductCreateCommand): Int {
+        return productRepository.save(Product.create(
+            productName = createCommand.productName,
+            price = createCommand.price,
+            quantity = createCommand.quantity
+        ))
     }
 
     @Transactional
-    override fun saveAll(products: List<Product>): Int {
-        return products.sumOf { productRepository.save(it) }
+    override fun saveAll(createCommands: List<ProductCreateCommand>): Int {
+        return createCommands.sumOf { productRepository.save(
+            Product.create(
+                productName = it.productName,
+                price = it.price,
+                quantity = it.quantity
+            )
+        ) }
     }
 
     @Transactional
     override fun update(updateCommand: ProductUpdateCommand): Int {
-        return updateCommand.let {
-                findById(it.productId).updateInfo(
-                    it.productName?.let { value -> ProductName(value) },
-                    it.price?.let { amount -> Price(amount) }
-                )
-        }.let { productRepository.save(it) }
+        val product = productRepository.findById(updateCommand.productId) ?: throw HackingDoubtException("존재하지 않는 상품을 수정할 수 없습니다: ${updateCommand.productId}.")
+
+        return productRepository.save(product.updateInfo(
+            newName = updateCommand.productName,
+            newPrice = updateCommand.price
+        ))
     }
 
     @Transactional
@@ -38,7 +49,15 @@ open class ProductService(
         return updateCommands.sumOf { update(it) }
     }
 
-    override fun deleteAll(): Int {
+    @Transactional
+    override fun deleteAll(deleteCommands: List<ProductDeleteCommand>): Int {
+        return deleteCommands.sumOf {
+            val product = productRepository.findById(it.productId) ?: throw HackingDoubtException("존재하지 않는 상품을 삭제할 수 없습니다: ${it.productId}.")
+            productRepository.save(product.delete())
+        }
+    }
+
+    override fun truncate(): Int {
         return productRepository.truncate()
     }
 

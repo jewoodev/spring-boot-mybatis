@@ -2,19 +2,24 @@ package data.spring.mybatis.adapter.`in`.product
 
 import data.spring.mybatis.ControllerTestSupport
 import data.spring.mybatis.adapter.`in`.product.request.CursorInfo
-import data.spring.mybatis.application.service.product.command.ProductSearchCond
+import data.spring.mybatis.adapter.`in`.product.request.ProductDeleteBatchRequest
+import data.spring.mybatis.adapter.`in`.product.request.ProductDeleteRequest
+import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
+import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import data.spring.mybatis.domain.testClock
 import io.mockk.every
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDateTime
 
 class ProductControllerTest: ControllerTestSupport() {
+    // ================================ Paging Test ================================
     @Test
-    fun getProductsWithPagingSuccessfully() {
+    fun `get products with paging successfully`() {
         val url = "/products/v1/list"
         val products = ProductFixture.createProducts(number = 20)
         every { productUseCase.findByCond(createdAt = null, productId = null) } returns products
@@ -24,12 +29,12 @@ class ProductControllerTest: ControllerTestSupport() {
             .andExpect(jsonPath("$.content.size()").value(20))
             .andExpect(jsonPath("$.hasNext").value("true"))
             .andExpect(jsonPath("$.content[19].productName").value(products[19].productName.value))
-            .andExpect { jsonPath("$.content[20].price").value(products[20].price.amount) }
-            .andExpect { jsonPath("$.content[20].quantity").value(products[20].quantity.value) }
+            .andExpect(jsonPath("$.content[19].price").value(products[19].price.amount))
+            .andExpect(jsonPath("$.content[19].quantity").value(products[19].quantity.amount))
     }
 
     @Test
-    fun getProductsWithCondSuccessfully() {
+    fun `get products with conditions successfully`() {
         val url = "/products/v1/list"
         val queryParam = "?maxPrice=10000"
         val products = ProductFixture.createProducts(number = 21)
@@ -42,11 +47,11 @@ class ProductControllerTest: ControllerTestSupport() {
             .andExpect(jsonPath("$.hasNext").value("false"))
             .andExpect(jsonPath("$.content[9].productName").value(products[9].productName.value))
             .andExpect(jsonPath("$.content[7].price").value(products[7].price.amount))
-            .andExpect(jsonPath("$.content[1].quantity").value(products[1].quantity.value))
+            .andExpect(jsonPath("$.content[1].quantity").value(products[1].quantity.amount))
     }
 
     @Test
-    fun getProductsWithCursorSuccessfully() {
+    fun `get products with cursor successfully`() {
         val url = "/products/v1/list"
         val createdAt = LocalDateTime.now(testClock())
         val cursor = CursorInfo(createdAt = createdAt, id = 21L).encode()
@@ -59,13 +64,82 @@ class ProductControllerTest: ControllerTestSupport() {
             .andExpect(jsonPath("$.content.size()").value(20))
             .andExpect(jsonPath("$.hasNext").value("true"))
             .andExpect(jsonPath("$.content[19].productName").value(products[19].productName.value))
-            .andExpect { jsonPath("$.content[4].price").value(products[4].price.amount) }
-            .andExpect { jsonPath("$.content[2].quantity").value(products[2].quantity.value) }
+            .andExpect(jsonPath("$.content[4].price").value(products[4].price.amount))
+            .andExpect(jsonPath("$.content[2].quantity").value(products[2].quantity.amount))
     }
 
     // ================================ Validation Test ================================
     @Test
-    fun updateProductWithNoData() {
+    fun `create product successfully`() {
+        // given
+        val url = "/products/v1/save"
+        val content = """
+                {
+                    "productName": "test product",
+                    "price": 1000,
+                    "quantity": 10
+                }
+            """.trimIndent()
+
+        val createCommand = ProductCreateCommand("test product", 1000, 10)
+        every { productUseCase.save(createCommand) } returns 1
+
+        // when, then
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(url)
+                .content(content)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isCreated)
+            .andExpect(jsonPath("$").value("상품 저장에 성공했습니다."))
+    }
+
+    @Test
+    fun `create product fails when product name is too short`() {
+        // given
+        val url = "/products/v1/save"
+        val content = """
+                {
+                    "productName": "t",
+                    "price": 1000,
+                    "quantity": 10
+                }
+            """.trimIndent()
+
+        // when, then
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(url)
+                .content(content)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.message").value("상품명은 2자 이상 100자 이하여야 합니다."))
+    }
+
+    @Test
+    fun `create product fails when price is less than 1`() {
+        // given
+        val url = "/products/v1/save"
+        val content = """
+                {
+                    "productName": "test product",
+                    "price": 0,
+                    "quantity": 10
+                }
+            """.trimIndent()
+
+        // when, then
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(url)
+                .content(content)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.message").value("가격은 1원 이상이어야 합니다."))
+    }
+
+    @Test
+    fun `update product fails when no data is provided`() {
         // given
         val content = """
                 {    
@@ -91,7 +165,7 @@ class ProductControllerTest: ControllerTestSupport() {
     }
 
     @Test
-    fun updateProductWithShortName() {
+    fun `update product fails when product name is too short`() {
         // given
         val content = """
                 {    
@@ -114,5 +188,33 @@ class ProductControllerTest: ControllerTestSupport() {
         )
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("상품명은 2자 이상 100자 이하로 입력해주세요."))
+    }
+
+    @Test
+    fun `delete products successfully`() {
+        // given
+        val url = "/products/v1/delete"
+        val content = """
+                {
+                    "deleteRequests": [
+                        { "productId": 1 },
+                        { "productId": 2 }
+                    ]
+                }
+            """.trimIndent()
+
+        val deleteBatchRequest = ProductDeleteBatchRequest(
+            listOf(ProductDeleteRequest(1L), ProductDeleteRequest(2L))
+        )
+        every { productUseCase.deleteAll(any()) } returns 2
+
+        // when, then
+        mockMvc.perform(
+            MockMvcRequestBuilders.patch(url)
+                .content(content)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").value("상품 삭제에 성공했습니다."))
     }
 }
