@@ -2,9 +2,9 @@ package data.spring.mybatis.application.provided.product
 
 import data.spring.mybatis.IntegrationTestSupport
 import data.spring.mybatis.application.exception.NoDataFoundException
+import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
 import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import data.spring.mybatis.application.provided.product.dto.ProductUpdateCommand
-import data.spring.mybatis.domain.product.Product
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
@@ -20,14 +20,14 @@ class ProductUseCaseTest: IntegrationTestSupport() {
     fun `save products and find all successfully`() {
         // given
         val sut = super.productUseCase
-        val products = listOf(
-            Product.create(productName = "상품1", price = 20000, quantity = 10),
-            Product.create(productName = "상품2", price = 30000, quantity = 20),
-            Product.create(productName = "상품3", price = 40000, quantity = 30)
+        val createCommands = listOf(
+            ProductCreateCommand(productName = "상품1", price = 20000, quantity = 10),
+            ProductCreateCommand(productName = "상품2", price = 30000, quantity = 20),
+            ProductCreateCommand(productName = "상품3", price = 40000, quantity = 30)
         )
 
         // when
-        val savedCnt = sut.saveAll(products)
+        val savedCnt = sut.saveAll(createCommands)
         val searchCond = ProductSearchCond(null, null)
         val saved = sut.findByCond(searchCond = searchCond, createdAt = null, productId = null)
 
@@ -45,12 +45,12 @@ class ProductUseCaseTest: IntegrationTestSupport() {
     @Test
     fun `find product by id successfully`() {
         val sut = super.productUseCase
-        val products = listOf(
-            Product.create(productName = "리얼 마이바티스", price = 30000, quantity = 100),
-            Product.create(productName = "리얼 제이디비씨", price = 30000, quantity = 100))
-        sut.saveAll(products)
+        val createCommands = listOf(
+            ProductCreateCommand(productName = "리얼 마이바티스", price = 30000, quantity = 100),
+            ProductCreateCommand(productName = "리얼 제이디비씨", price = 30000, quantity = 100))
+        sut.saveAll(createCommands)
 
-        val saved = sut.findById(1L)
+        val saved = sut.findById(1L)!!
 
         assertThat(saved!!.productName).isEqualTo(products[0].productName)
         assertThat(saved.price).isEqualTo(products[0].price)
@@ -60,11 +60,11 @@ class ProductUseCaseTest: IntegrationTestSupport() {
     @Test
     fun `find products by cursor successfully`() {
         val sut = super.productUseCase
-        val products = mutableListOf(Product.create("testProduct0", 10000, 100))
+        val createCommands = mutableListOf(ProductCreateCommand("testProduct0", 10000, 100))
         for (i in 1..30) {
-            products.add(Product.create("testProduct$i", 10000, 100))
+            createCommands.add(ProductCreateCommand("testProduct$i", 10000, 100))
         }
-        sut.saveAll(products)
+        sut.saveAll(createCommands)
 
         val found = sut.findByCond(createdAt = null, productId = null)
 
@@ -77,12 +77,12 @@ class ProductUseCaseTest: IntegrationTestSupport() {
     fun `find products by cursor with conditions successfully`() {
         // given
         val sut = super.productUseCase
-        val products = listOf(
-            Product.create(productName = "리얼 마이바티스", price = 30000, quantity = 100),
-            Product.create(productName = "리얼 제이디비씨", price = 30000, quantity = 100),
-            Product.create(productName = "리얼 비쌈", price = 50000, quantity = 100)
+        val createCommands = listOf(
+            ProductCreateCommand(productName = "리얼 마이바티스", price = 30000, quantity = 100),
+            ProductCreateCommand(productName = "리얼 제이디비씨", price = 30000, quantity = 100),
+            ProductCreateCommand(productName = "리얼 비쌈", price = 50000, quantity = 100)
         )
-        sut.saveAll(products)
+        sut.saveAll(createCommands)
 
         // when
         val searchCommand = ProductSearchCond(productName = null, maxPrice = 30000)
@@ -97,7 +97,7 @@ class ProductUseCaseTest: IntegrationTestSupport() {
     fun `find product by id fails when no matching product exists`() {
         // given
         val sut = super.productUseCase
-        sut.save(Product.create(productName = "testProduct", price = 10000, quantity = 100))
+        sut.save(ProductCreateCommand(productName = "testProduct", price = 10000, quantity = 100))
 
         // when & then
         assertThatThrownBy { sut.findById(2L) }
@@ -108,12 +108,12 @@ class ProductUseCaseTest: IntegrationTestSupport() {
     fun `find products by conditions fails when no matching product exists`() {
         // given
         val sut = super.productUseCase
-        val products = listOf(
-            Product.create(productName = "리얼 마이바티스", price = 30000, quantity = 100),
-            Product.create(productName = "리얼 제이디비씨", price = 30000, quantity = 100),
-            Product.create(productName = "리얼 비쌈", price = 50000, quantity = 100)
+        val createCommands = listOf(
+            ProductCreateCommand(productName = "리얼 마이바티스", price = 30000, quantity = 100),
+            ProductCreateCommand(productName = "리얼 제이디비씨", price = 30000, quantity = 100),
+            ProductCreateCommand(productName = "리얼 비쌈", price = 50000, quantity = 100)
         )
-        sut.saveAll(products)
+        sut.saveAll(createCommands)
 
         // when & then
         val searchCommand = ProductSearchCond(productName = null, maxPrice = 20000)
@@ -125,12 +125,12 @@ class ProductUseCaseTest: IntegrationTestSupport() {
     fun `update products successfully`() {
         // given
         val sut = super.productUseCase
-        val products = listOf(
-            Product.create(productName = "상품1", price = 20000, quantity = 10),
-            Product.create(productName = "상품2", price = 30000, quantity = 20),
-            Product.create(productName = "상품3", price = 40000, quantity = 30)
+        val createCommands = listOf(
+            ProductCreateCommand(productName = "상품1", price = 20000, quantity = 10),
+            ProductCreateCommand(productName = "상품2", price = 30000, quantity = 20),
+            ProductCreateCommand(productName = "상품3", price = 40000, quantity = 30)
         )
-        products.forEach { sut.save(it) }
+        createCommands.forEach { sut.save(it) }
         val updateCommands = listOf(
             ProductUpdateCommand(1L, "상품4", null, null),
             ProductUpdateCommand(2L, "상품5", null, null),

@@ -1,13 +1,14 @@
 package data.spring.mybatis.application.provided.product
 
+import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
 import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import data.spring.mybatis.application.provided.product.dto.ProductUpdateCommand
 import data.spring.mybatis.domain.product.Product
 import java.time.LocalDateTime
 
 interface ProductUseCase {
-    fun save(product: Product): Int
-    fun saveAll(products: List<Product>): Int
+    fun save(createCommand: ProductCreateCommand): Int
+    fun saveAll(createCommands: List<ProductCreateCommand>): Int
 
     fun update(updateCommand: ProductUpdateCommand): Int
     fun updateAll(updateCommands: List<ProductUpdateCommand>): Int

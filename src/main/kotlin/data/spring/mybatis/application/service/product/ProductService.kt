@@ -2,6 +2,7 @@ package data.spring.mybatis.application.service.product
 
 import data.spring.mybatis.application.exception.NoDataFoundException
 import data.spring.mybatis.application.provided.product.ProductUseCase
+import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
 import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import data.spring.mybatis.application.provided.product.dto.ProductUpdateCommand
 import data.spring.mybatis.application.required.product.ProductRepository
@@ -12,13 +13,23 @@ import java.time.LocalDateTime
 open class ProductService(
     val productRepository: ProductRepository
 ) : ProductUseCase {
-    override fun save(product: Product): Int {
-        return productRepository.save(product)
+    override fun save(createCommand: ProductCreateCommand): Int {
+        return productRepository.save(Product.create(
+            productName = createCommand.productName,
+            price = createCommand.price,
+            quantity = createCommand.quantity
+        ))
     }
 
     @Transactional
-    override fun saveAll(products: List<Product>): Int {
-        return products.sumOf { productRepository.save(it) }
+    override fun saveAll(createCommands: List<ProductCreateCommand>): Int {
+        return createCommands.sumOf { productRepository.save(
+            Product.create(
+                productName = it.productName,
+                price = it.price,
+                quantity = it.quantity
+            )
+        ) }
     }
 
     @Transactional
