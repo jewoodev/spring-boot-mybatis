@@ -52,9 +52,9 @@ class ProductUseCaseTest: IntegrationTestSupport() {
 
         val saved = sut.findById(1L)!!
 
-        assertThat(saved!!.productName).isEqualTo(products[0].productName)
-        assertThat(saved.price).isEqualTo(products[0].price)
-        assertThat(saved.quantity).isEqualTo(products[0].quantity)
+        assertThat(saved).extracting("productName").isEqualTo(createCommands[0].productName)
+        assertThat(saved).extracting("price").isEqualTo(createCommands[0].price)
+        assertThat(saved).extracting("quantity").isEqualTo(createCommands[0].quantity)
     }
 
     @Test
@@ -69,8 +69,8 @@ class ProductUseCaseTest: IntegrationTestSupport() {
         val found = sut.findByCond(createdAt = null, productId = null)
 
         assertThat(found).hasSize(21)
-        assertThat(found[0].productName).isEqualTo(products[0].productName)
-        assertThat(found[20].productName).isEqualTo(products[20].productName)
+        assertThat(found[0]).extracting("productName").isEqualTo(createCommands[0].productName)
+        assertThat(found[20]).extracting("productName").isEqualTo(createCommands[20].productName)
     }
 
     @Test
@@ -144,5 +144,7 @@ class ProductUseCaseTest: IntegrationTestSupport() {
         assertThat(updateCnt).isEqualTo(3)
         val saved = sut.findAll()
         assertThat(saved).extracting("productName").containsExactly("상품4", "상품5", "상품6")
+        assertThat(saved).extracting("price").containsExactly(20000, 30000, 40000)
+        assertThat(saved).extracting("quantity").containsExactly(10, 20, 30)
     }
 }

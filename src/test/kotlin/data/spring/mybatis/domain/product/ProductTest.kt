@@ -22,7 +22,7 @@ class ProductTest {
         val increased = original.increaseQuantity(50)
         
         // then
-        assertThat(increased.quantity.value).isEqualTo(150)
+        assertThat(increased).extracting("quantity").isEqualTo(150)
         assertThat(increased.updatedAt).isAfterOrEqualTo(original.updatedAt)
     }
 
@@ -35,7 +35,7 @@ class ProductTest {
         val decreasedProduct = product.decreaseQuantity(50)
         
         // then
-        assertThat(decreasedProduct.quantity.value).isEqualTo(50)
+        assertThat(decreasedProduct).extracting("quantity").isEqualTo(50)
         assertThat(decreasedProduct.updatedAt).isAfterOrEqualTo(product.updatedAt)
     }
 
@@ -50,8 +50,8 @@ class ProductTest {
         val updatedProduct = product.updateInfo(newName, newPrice)
         
         // then
-        assertThat(updatedProduct.productName.value).isEqualTo(newName)
-        assertThat(updatedProduct.price.amount).isEqualTo(newPrice)
+        assertThat(updatedProduct).extracting("productName").isEqualTo(newName)
+        assertThat(updatedProduct).extracting("price").isEqualTo(newPrice)
         assertThat(updatedProduct.updatedAt).isAfterOrEqualTo(product.updatedAt)
     }
 
@@ -65,7 +65,7 @@ class ProductTest {
         val updatedProduct = product.updateInfo(newName = newName)
         
         // then
-        assertThat(updatedProduct.productName.value).isEqualTo(newName)
+        assertThat(updatedProduct).extracting("productName").isEqualTo(newName)
         assertThat(updatedProduct.price).isEqualTo(product.price)
     }
 
@@ -80,7 +80,7 @@ class ProductTest {
         
         // then
         assertThat(updated.productName).isEqualTo(original.productName)
-        assertThat(updated.price.amount).isEqualTo(newPrice)
+        assertThat(updated).extracting("price").isEqualTo(newPrice)
     }
 
     @Test

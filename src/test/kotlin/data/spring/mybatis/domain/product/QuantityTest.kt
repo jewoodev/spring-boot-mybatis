@@ -9,7 +9,7 @@ class QuantityTest {
     fun `quantity is created successfully`() {
         val value = 10
         val quantity = Quantity(value)
-        assertThat(quantity.value).isEqualTo(value)
+        assertThat(quantity.amount).isEqualTo(value)
     }
 
     @Test
@@ -23,7 +23,7 @@ class QuantityTest {
     fun `quantity is increased successfully`() {
         val quantity = Quantity(10)
         val increased = quantity.increase(5)
-        assertThat(increased.value).isEqualTo(15)
+        assertThat(increased.amount).isEqualTo(15)
     }
 
     @Test
@@ -42,7 +42,7 @@ class QuantityTest {
     fun `quantity is decreased successfully`() {
         val quantity = Quantity(10)
         val decreased = quantity.decrease(5)
-        assertThat(decreased.value).isEqualTo(5)
+        assertThat(decreased.amount).isEqualTo(5)
     }
 
     @Test
@@ -62,6 +62,6 @@ class QuantityTest {
         val quantity = Quantity(10)
         assertThatThrownBy { quantity.decrease(11) }
             .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("재고 수량이 부족합니다.")
+            .hasMessage("재고 수량이 부족해 11개 만큼 감소시킬 수 없습니다.")
     }
 }
