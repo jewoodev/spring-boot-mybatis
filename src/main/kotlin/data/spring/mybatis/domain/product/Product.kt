@@ -44,7 +44,6 @@ data class Product(
             quantity: Int
         ): Product {
             return Product(
-                productId = null,
                 productName = ProductName(productName),
                 price = Price(price),
                 quantity = Quantity(quantity)
