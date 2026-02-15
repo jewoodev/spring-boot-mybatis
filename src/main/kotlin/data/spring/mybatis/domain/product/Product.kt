@@ -37,6 +37,13 @@ data class Product(
         )
     }
 
+    fun delete(): Product {
+        return copy(
+            productName = productName.delete(),
+            updatedAt = LocalDateTime.now(clock())
+        )
+    }
+
     companion object {
         fun create(
             productName: String,

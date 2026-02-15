@@ -93,4 +93,17 @@ class ProductTest {
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("상품 수정의 필수 조건이 만족되지 않았습니다.")
     }
+
+    @Test
+    fun `product is deleted successfully`() {
+        // given
+        val product = Product.create("Test Product", 1000, 100)
+
+        // when
+        val deletedProduct = product.delete()
+
+        // then
+        assertThat(deletedProduct.productName.value).startsWith("Test Product$")
+        assertThat(deletedProduct.updatedAt).isAfterOrEqualTo(product.updatedAt)
+    }
 }

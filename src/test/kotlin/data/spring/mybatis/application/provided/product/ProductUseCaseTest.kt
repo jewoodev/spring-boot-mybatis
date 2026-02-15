@@ -3,6 +3,7 @@ package data.spring.mybatis.application.provided.product
 import data.spring.mybatis.IntegrationTestSupport
 import data.spring.mybatis.application.exception.NoDataFoundException
 import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
+import data.spring.mybatis.application.provided.product.dto.ProductDeleteCommand
 import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import data.spring.mybatis.application.provided.product.dto.ProductUpdateCommand
 import org.assertj.core.api.Assertions.assertThat
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test
 class ProductUseCaseTest: IntegrationTestSupport() {
     @AfterEach
     fun tearDown() {
-        super.productUseCase.deleteAll()
+        super.productUseCase.truncate()
     }
 
     @Test
@@ -146,5 +147,30 @@ class ProductUseCaseTest: IntegrationTestSupport() {
         assertThat(saved).extracting("productName").containsExactly("상품4", "상품5", "상품6")
         assertThat(saved).extracting("price").containsExactly(20000, 30000, 40000)
         assertThat(saved).extracting("quantity").containsExactly(10, 20, 30)
+    }
+
+    @Test
+    fun `delete products successfully`() {
+        // given
+        val sut = super.productUseCase
+        val createCommands = listOf(
+            ProductCreateCommand(productName = "상품1", price = 20000, quantity = 10),
+            ProductCreateCommand(productName = "상품2", price = 30000, quantity = 20)
+        )
+        sut.saveAll(createCommands)
+        val deleteCommands = listOf(
+            ProductDeleteCommand(productId = 1L),
+            ProductDeleteCommand(productId = 2L)
+        )
+
+        // when
+        val deleteCnt = sut.deleteAll(deleteCommands)
+
+        // then
+        assertThat(deleteCnt).isEqualTo(2)
+        val deleted1 = sut.findById(1L)!!
+        val deleted2 = sut.findById(2L)!!
+        assertThat(deleted1.productName.value).startsWith("상품1$")
+        assertThat(deleted2.productName.value).startsWith("상품2$")
     }
 }

@@ -33,4 +33,17 @@ class ProductNameTest {
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("상품명은 영어, 숫자, 한글, 공백만 허용됩니다.")
     }
+
+    @Test
+    fun `product name is deleted successfully`() {
+        // given
+        val originalName = ProductName("Original Product")
+
+        // when
+        val deletedName = originalName.delete()
+
+        // then
+        assertThat(deletedName.value).startsWith("Original Product$")
+        assertThat(deletedName.value.length).isGreaterThan(originalName.value.length)
+    }
 }

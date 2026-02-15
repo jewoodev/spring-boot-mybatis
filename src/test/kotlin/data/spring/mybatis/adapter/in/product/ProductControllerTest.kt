@@ -2,6 +2,8 @@ package data.spring.mybatis.adapter.`in`.product
 
 import data.spring.mybatis.ControllerTestSupport
 import data.spring.mybatis.adapter.`in`.product.request.CursorInfo
+import data.spring.mybatis.adapter.`in`.product.request.ProductDeleteBatchRequest
+import data.spring.mybatis.adapter.`in`.product.request.ProductDeleteRequest
 import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
 import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import data.spring.mybatis.domain.testClock
@@ -186,5 +188,33 @@ class ProductControllerTest: ControllerTestSupport() {
         )
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("상품명은 2자 이상 100자 이하로 입력해주세요."))
+    }
+
+    @Test
+    fun `delete products successfully`() {
+        // given
+        val url = "/products/v1/delete"
+        val content = """
+                {
+                    "deleteRequests": [
+                        { "productId": 1 },
+                        { "productId": 2 }
+                    ]
+                }
+            """.trimIndent()
+
+        val deleteBatchRequest = ProductDeleteBatchRequest(
+            listOf(ProductDeleteRequest(1L), ProductDeleteRequest(2L))
+        )
+        every { productUseCase.deleteAll(any()) } returns 2
+
+        // when, then
+        mockMvc.perform(
+            MockMvcRequestBuilders.patch(url)
+                .content(content)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").value("상품 삭제에 성공했습니다."))
     }
 }

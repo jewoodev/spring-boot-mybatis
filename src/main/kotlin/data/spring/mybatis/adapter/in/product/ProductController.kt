@@ -2,6 +2,8 @@ package data.spring.mybatis.adapter.`in`.product
 
 import data.spring.mybatis.adapter.`in`.product.request.CursorInfo
 import data.spring.mybatis.adapter.`in`.product.request.ProductCreateRequest
+import data.spring.mybatis.adapter.`in`.product.request.ProductDeleteBatchRequest
+import data.spring.mybatis.adapter.`in`.product.request.ProductDeleteRequest
 import data.spring.mybatis.adapter.`in`.product.request.ProductUpdateBatchRequest
 import data.spring.mybatis.adapter.`in`.product.response.ProductResponse
 import data.spring.mybatis.adapter.`in`.response.CursorPageResponse
@@ -61,5 +63,11 @@ class ProductController(
     @PatchMapping("/update")
     fun updateProducts(@Valid @RequestBody updateBatchRequest: ProductUpdateBatchRequest) {
         updateBatchRequest.toCommands().forEach { this.productUseCase.update(it) }
+    }
+
+    @PatchMapping("/delete")
+    fun deleteProducts(@Valid @RequestBody deleteRequests: ProductDeleteBatchRequest): ResponseEntity<String> {
+        productUseCase.deleteAll(deleteRequests.toCommands())
+        return ResponseEntity.ok().body("상품 삭제에 성공했습니다.")
     }
 }

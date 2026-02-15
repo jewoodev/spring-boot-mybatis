@@ -1,8 +1,10 @@
 package data.spring.mybatis.application.service.product
 
+import data.spring.mybatis.application.exception.HackingDoubtException
 import data.spring.mybatis.application.exception.NoDataFoundException
 import data.spring.mybatis.application.provided.product.ProductUseCase
 import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
+import data.spring.mybatis.application.provided.product.dto.ProductDeleteCommand
 import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import data.spring.mybatis.application.provided.product.dto.ProductUpdateCommand
 import data.spring.mybatis.application.required.product.ProductRepository
@@ -34,12 +36,12 @@ open class ProductService(
 
     @Transactional
     override fun update(updateCommand: ProductUpdateCommand): Int {
-        return updateCommand.let {
-                findById(it.productId).updateInfo(
-                    it.productName,
-                    it.price
-                )
-        }.let { productRepository.save(it) }
+        val product = productRepository.findById(updateCommand.productId) ?: throw HackingDoubtException("존재하지 않는 상품을 수정할 수 없습니다: ${updateCommand.productId}.")
+
+        return productRepository.save(product.updateInfo(
+            newName = updateCommand.productName,
+            newPrice = updateCommand.price
+        ))
     }
 
     @Transactional
@@ -47,7 +49,15 @@ open class ProductService(
         return updateCommands.sumOf { update(it) }
     }
 
-    override fun deleteAll(): Int {
+    @Transactional
+    override fun deleteAll(deleteCommands: List<ProductDeleteCommand>): Int {
+        return deleteCommands.sumOf {
+            val product = productRepository.findById(it.productId) ?: throw HackingDoubtException("존재하지 않는 상품을 삭제할 수 없습니다: ${it.productId}.")
+            productRepository.save(product.delete())
+        }
+    }
+
+    override fun truncate(): Int {
         return productRepository.truncate()
     }
 

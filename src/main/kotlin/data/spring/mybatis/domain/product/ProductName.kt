@@ -4,10 +4,17 @@ package data.spring.mybatis.domain.product
 value class ProductName(val value: String) {
     init {
         require(value.length in 2..100) { "상품명은 2~100자여야 합니다." }
-        require(value.matches(nameRegex)) { "상품명은 영어, 숫자, 한글, 공백만 허용됩니다." }
+        require(value.matches(productNameRegex)) { "상품명은 영어, 숫자, 한글, 공백만 허용됩니다." }
+    }
+
+    fun delete(): ProductName {
+        return ProductName(
+            value.plus("$")
+                .plus((1..999999).random().toString())
+        )
     }
 
     companion object {
-        val nameRegex = Regex("^[a-zA-Z0-9가-힣\\s]+$")
+        val productNameRegex = Regex("^[a-zA-Z0-9가-힣\\s]+(?:\\$(?:[1-9]\\d{0,5}))?$")
     }
 }

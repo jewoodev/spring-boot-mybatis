@@ -1,6 +1,7 @@
 package data.spring.mybatis.application.provided.product
 
 import data.spring.mybatis.application.provided.product.dto.ProductCreateCommand
+import data.spring.mybatis.application.provided.product.dto.ProductDeleteCommand
 import data.spring.mybatis.application.provided.product.dto.ProductSearchCond
 import data.spring.mybatis.application.provided.product.dto.ProductUpdateCommand
 import data.spring.mybatis.domain.product.Product
@@ -13,7 +14,8 @@ interface ProductUseCase {
     fun update(updateCommand: ProductUpdateCommand): Int
     fun updateAll(updateCommands: List<ProductUpdateCommand>): Int
 
-    fun deleteAll(): Int
+    fun deleteAll(deleteCommands: List<ProductDeleteCommand>): Int
+    fun truncate(): Int
 
     fun findById(productId: Long): Product?
     fun findByCond(searchCond: ProductSearchCond? = null,

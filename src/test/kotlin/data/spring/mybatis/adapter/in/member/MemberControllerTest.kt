@@ -1,7 +1,6 @@
 package data.spring.mybatis.adapter.`in`.member
 
 import data.spring.mybatis.ControllerTestSupport
-import data.spring.mybatis.domain.email.VerificationEmailContent
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
