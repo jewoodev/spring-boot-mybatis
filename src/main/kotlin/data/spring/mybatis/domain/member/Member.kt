@@ -1,5 +1,6 @@
 package data.spring.mybatis.domain.member
 
+import com.sun.tools.javac.util.Assert.check
 import data.spring.mybatis.domain.clock
 import data.spring.mybatis.domain.email.EmailSender
 import data.spring.mybatis.domain.member.Role.UNVERIFIED
